@@ -12,12 +12,25 @@ fn main() {
     println!("p2: {:.2?}", elapsed);
 }
 
-fn next_number(seed: u64) -> u64 {
-    let mut seed = seed;
-    seed = (seed ^ (seed << 6)) & 0xffffff; // (seed ^ (seed * 64)) % 16777216;
-    seed = (seed ^ (seed >> 5)) & 0xffffff; // (seed ^ (seed / 32)) % 16777216;
-    seed = (seed ^ (seed << 11)) & 0xffffff; // (seed ^ (seed * 2048)) % 16777216;
-    seed
+struct SecretGenerator {
+    seed: u64,
+}
+
+impl SecretGenerator {
+    fn new(seed: u64) -> Self {
+        SecretGenerator { seed }
+    }
+}
+
+impl Iterator for SecretGenerator {
+    type Item = u64;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.seed = (self.seed ^ (self.seed << 6)) & 0xffffff; // (seed ^ (seed * 64)) % 16777216;
+        self.seed = (self.seed ^ (self.seed >> 5)) & 0xffffff; // (seed ^ (seed / 32)) % 16777216;
+        self.seed = (self.seed ^ (self.seed << 11)) & 0xffffff; // (seed ^ (seed * 2048)) % 16777216;
+        Some(self.seed)
+    }
 }
 
 fn p1() {
@@ -28,14 +41,10 @@ fn p1() {
         .map(|line| line.parse::<u64>().unwrap())
         .collect::<Vec<_>>();
 
-    let mut sum: u64 = 0;
-    for mut seed in seeds {
-        for _ in 0..2000 {
-            seed = next_number(seed);
-        }
-
-        sum += seed;
-    }
+    let sum: u64 = seeds
+        .into_iter()
+        .map(|seed| SecretGenerator::new(seed).take(2000).last().unwrap())
+        .sum();
 
     println!("p1: {}", sum);
 }
@@ -53,11 +62,13 @@ fn p2() {
     let mut results: HashMap<(u64, u64, u64, u64), u64> = HashMap::new();
     let mut seen: HashMap<(u64, u64, u64, u64), u64> = HashMap::new();
 
-    for (index, seed) in seeds.iter().enumerate() {
-        let zeroth = *seed;
-        let first = next_number(zeroth);
-        let second = next_number(first);
-        let third = next_number(second);
+    for (index, &seed) in seeds.iter().enumerate() {
+        let mut generator = SecretGenerator::new(seed);
+
+        let zeroth = seed;
+        let first = generator.next().unwrap();
+        let second = generator.next().unwrap();
+        let third = generator.next().unwrap();
 
         let mut a;
         let mut b = to_index(zeroth, first);
@@ -68,12 +79,11 @@ fn p2() {
 
         for _ in 3..2000 {
             let prev = number;
-            number = next_number(number);
+            number = generator.next().unwrap();
 
             (a, b, c, d) = (b, c, d, to_index(prev, number));
 
             let key = (a, b, c, d);
-
             if !seen.contains_key(&key) || seen.get(&key).unwrap() != &(index as u64) {
                 results
                     .entry(key)
