@@ -12,27 +12,12 @@ fn main() {
     println!("p2: {:.2?}", elapsed);
 }
 
-fn mix(value: i64, secret: i64) -> i64 {
-    value ^ secret
-}
-
-fn prune(value: i64) -> i64 {
-    value % 16777216
-}
-
-fn next_number(seed: i64) -> i64 {
+fn next_number(seed: u64) -> u64 {
     let mut seed = seed;
-    seed = (seed ^ (seed * 64)) % 16777216;
-    seed = (seed ^ (seed / 32)) % 16777216;
-    seed = (seed ^ (seed * 2048)) % 16777216;
+    seed = (seed ^ (seed << 6)) & 0xffffff; // (seed ^ (seed * 64)) % 16777216;
+    seed = (seed ^ (seed >> 5)) & 0xffffff; // (seed ^ (seed / 32)) % 16777216;
+    seed = (seed ^ (seed << 11)) & 0xffffff; // (seed ^ (seed * 2048)) % 16777216;
     seed
-
-    // this doesn't work for some reason
-    // let mut seed = seed;
-    // seed = prune(mix(seed * 64, seed));
-    // seed = prune(mix(seed / 32, seed));
-    // seed = prune(mix(seed * 2024, seed));
-    // seed
 }
 
 fn p1() {
@@ -40,10 +25,10 @@ fn p1() {
         .expect("Should have been able to read the file")
         .trim_end()
         .lines()
-        .map(|line| line.parse::<i64>().unwrap())
+        .map(|line| line.parse::<u64>().unwrap())
         .collect::<Vec<_>>();
 
-    let mut sum: i64 = 0;
+    let mut sum: u64 = 0;
     for mut seed in seeds {
         for _ in 0..2000 {
             seed = next_number(seed);
@@ -60,13 +45,13 @@ fn p2() {
         .expect("Should have been able to read the file")
         .trim_end()
         .lines()
-        .map(|line| line.parse::<i64>().unwrap())
+        .map(|line| line.parse::<u64>().unwrap())
         .collect::<Vec<_>>();
 
-    let to_index = |prev: i64, curr: i64| 9 + curr % 10 - prev % 10;
+    let to_index = |prev: u64, curr: u64| 9 + curr % 10 - prev % 10;
 
-    let mut results: HashMap<(i64, i64, i64, i64), i64> = HashMap::new();
-    let mut seen: HashMap<(i64, i64, i64, i64), i64> = HashMap::new();
+    let mut results: HashMap<(u64, u64, u64, u64), u64> = HashMap::new();
+    let mut seen: HashMap<(u64, u64, u64, u64), u64> = HashMap::new();
 
     for (index, seed) in seeds.iter().enumerate() {
         let zeroth = *seed;
@@ -89,15 +74,14 @@ fn p2() {
 
             let key = (a, b, c, d);
 
-            if !seen.contains_key(&key) || seen.get(&key).unwrap() != &(index as i64) {
+            if !seen.contains_key(&key) || seen.get(&key).unwrap() != &(index as u64) {
                 results
                     .entry(key)
                     .and_modify(|e| *e += number % 10)
                     .or_insert(number % 10);
 
-                seen.insert(key, index as i64);
+                seen.insert(key, index as u64);
             }
-            // results
         }
     }
 
