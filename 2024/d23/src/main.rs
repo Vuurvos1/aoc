@@ -17,43 +17,30 @@ fn main() {
 }
 
 type Graph = HashMap<String, HashSet<String>>;
+type Triangle = [String; 3];
 
 fn get_connections(links: Vec<(String, String)>) -> Graph {
     let mut graph: Graph = HashMap::new();
-    for link in links {
-        let (a, b) = link;
-        let _ = graph
-            .entry(a.clone())
-            .or_insert(HashSet::new())
-            .insert(b.clone());
-        let _ = graph
-            .entry(b.clone())
-            .or_insert(HashSet::new())
-            .insert(a.clone());
+    for (a, b) in links {
+        graph.entry(a.clone()).or_default().insert(b.clone());
+        graph.entry(b).or_default().insert(a);
     }
-
     graph
 }
 
-fn find_triangles(graph: Graph) -> HashSet<Vec<String>> {
-    let mut triangles: HashSet<Vec<String>> = HashSet::new();
-
+fn find_triangles(graph: Graph) -> HashSet<Triangle> {
+    let mut triangles: HashSet<Triangle> = HashSet::new();
     for (node, connections) in &graph {
-        let connections: Vec<String> = connections.iter().cloned().collect();
-        for i in 0..connections.len() {
-            for j in 0..connections.len() {
-                let n1 = &connections[i];
-                let n2 = &connections[j];
-
+        for (i, n1) in connections.iter().enumerate() {
+            for n2 in connections.iter().skip(i + 1) {
                 if graph.get(n1).unwrap().contains(n2) {
-                    let mut tri: Vec<String> = vec![node.clone(), n1.clone(), n2.clone()];
+                    let mut tri: Triangle = [node.clone(), n1.clone(), n2.clone()];
                     tri.sort();
                     triangles.insert(tri);
                 }
             }
         }
     }
-
     triangles
 }
 
@@ -69,7 +56,6 @@ fn p1() {
         .collect::<Vec<_>>();
 
     let connection_graph = get_connections(links);
-
     let tris = find_triangles(connection_graph);
 
     // sum every string that contains a node that starts with a "t"
@@ -124,7 +110,6 @@ fn p2() {
         .collect::<Vec<_>>();
 
     let connection_graph = get_connections(links);
-
     let mut cliques: Vec<HashSet<String>> = Vec::new();
     bron_kerbosch(
         HashSet::new(),
