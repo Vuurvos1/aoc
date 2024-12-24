@@ -40,32 +40,12 @@ fn get_command(keypad: &Keypad, start: char, end: char) -> Vec<Vec<char>> {
 
     let start_pos = keypad.get(&start).unwrap();
     let end_pos = keypad.get(&end).unwrap();
+    let empty_pos = keypad.get(&' ').unwrap();
 
     let dist = (
         end_pos.0 as i32 - start_pos.0 as i32,
         end_pos.1 as i32 - start_pos.1 as i32,
     );
-
-    let crosses_space =
-        |path: &Vec<char>, keypad: &HashMap<char, (i32, i32)>, start: char| -> bool {
-            let mut current = keypad[&start];
-            for step in path {
-                current = match step {
-                    '>' => (current.0 + 1, current.1),
-                    '<' => (current.0 - 1, current.1),
-                    'v' => (current.0, current.1 + 1),
-                    '^' => (current.0, current.1 - 1),
-                    _ => current,
-                };
-                if keypad.values().any(|&pos| {
-                    pos == current
-                        && keypad.iter().find(|(_, &v)| v == pos).map(|(&k, _)| k) == Some(' ')
-                }) {
-                    return true;
-                }
-            }
-            false
-        };
 
     let horizontal_first = |dist: (i32, i32)| -> Vec<char> {
         let mut path = Vec::new();
@@ -93,10 +73,14 @@ fn get_command(keypad: &Keypad, start: char, end: char) -> Vec<Vec<char>> {
 
     let mut unique_paths: Vec<Vec<char>> = Vec::new();
 
-    for path in [horizontal_first(dist), vertical_first(dist)] {
-        if !crosses_space(&path, keypad, start) && !unique_paths.contains(&path) {
-            unique_paths.push(path);
-        }
+    // vertical first
+    if dist.0 != 0 && &(start_pos.0 + dist.0, start_pos.1) != empty_pos {
+        unique_paths.push(vertical_first(dist));
+    }
+
+    // horizontal first
+    if dist.1 != 0 && &(start_pos.0, start_pos.1 + dist.1) != empty_pos {
+        unique_paths.push(horizontal_first(dist));
     }
 
     unique_paths
@@ -121,14 +105,12 @@ fn get_key_presses(keypad: &Keypad, code: Vec<char>, robot: u32, cache: &mut Cac
     let mut current = 'A';
     let mut length: i64 = 0;
     for i in 0..code.len() {
-        // println!("{} -> {}", current, code[i]);
         let moves = get_command(&keypad, current, code[i]);
 
         if robot == 0 {
             length += moves[0].len() as i64;
         } else {
             // get min moves
-            // println!("{} {:?}", robot, moves);
             let min = moves
                 .iter()
                 .map(|m| get_key_presses(&direction_keypad, m.clone(), robot - 1, cache))
@@ -180,7 +162,7 @@ fn p1() {
             .unwrap();
         let key_presses = get_key_presses(&numeric_keypad, code, 2, &mut cache);
 
-        sum += numberic_part * key_presses as i64;
+        sum += numberic_part * key_presses;
     }
 
     println!("p1: {}", sum);
@@ -222,7 +204,7 @@ fn p2() {
             .unwrap();
         let key_presses = get_key_presses(&numeric_keypad, code, 25, &mut cache);
 
-        sum += numberic_part * key_presses as i64;
+        sum += numberic_part * key_presses;
     }
 
     println!("p2: {}", sum);
