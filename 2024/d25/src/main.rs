@@ -13,36 +13,33 @@ fn main() {
 }
 
 fn p1() {
-    let input: Vec<Vec<Vec<char>>> = fs::read_to_string("./src/input.txt")
+    let input: Vec<Vec<u8>> = fs::read_to_string("./src/input.txt")
         .expect("Should have been able to read the file")
         .trim_end()
         .split("\n\n")
         .map(|line| {
             line.lines()
-                .map(|l| l.chars().collect::<Vec<_>>())
+                .map(|l| {
+                    let mut result = 0u8;
+                    for &byte in l.as_bytes() {
+                        result <<= 1; // Shift 1 left
+                        result |= (byte == b'#') as u8; // Add 1 if the byte is `#`
+                    }
+                    result
+                })
                 .collect::<Vec<_>>()
         })
         .collect::<Vec<_>>();
 
-    let mut keys: Vec<Vec<u32>> = Vec::new();
-    let mut locks: Vec<Vec<u32>> = Vec::new();
+    let mut keys: Vec<Vec<u8>> = Vec::new();
+    let mut locks: Vec<Vec<u8>> = Vec::new();
 
     for grid in input {
-        let mut heights: Vec<u32> = vec![0; 5];
-
-        for i in 0..grid.len() {
-            for j in 0..grid[i].len() {
-                if grid[i][j] == grid[0][0] {
-                    heights[j] += 1;
-                }
-            }
-        }
-
-        let is_lock = grid[0][0] == '#';
-        if is_lock {
-            locks.push(heights);
+        let is_key = grid[0] == 0;
+        if is_key {
+            locks.push(grid)
         } else {
-            keys.push(heights);
+            keys.push(grid);
         }
     }
 
@@ -51,7 +48,7 @@ fn p1() {
     // try all keys on all locks to check fit
     for lock in &locks {
         for key in &keys {
-            let fits = key.iter().zip(lock.iter()).all(|(l, k)| l >= k);
+            let fits = key.iter().zip(lock.iter()).all(|(l, k)| l & k == 0);
             if fits {
                 sum += 1;
             }
