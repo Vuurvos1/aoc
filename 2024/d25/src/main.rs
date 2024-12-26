@@ -13,29 +13,25 @@ fn main() {
 }
 
 fn p1() {
-    let input: Vec<Vec<u8>> = fs::read_to_string("./src/input.txt")
+    let input: Vec<u64> = fs::read_to_string("./src/input.txt")
         .expect("Should have been able to read the file")
         .trim_end()
         .split("\n\n")
         .map(|line| {
-            line.lines()
-                .map(|l| {
-                    let mut result = 0u8;
-                    for &byte in l.as_bytes() {
-                        result <<= 1; // Shift 1 left
-                        result |= (byte == b'#') as u8; // Add 1 if the byte is `#`
-                    }
-                    result
-                })
-                .collect::<Vec<_>>()
+            let mut result = 0;
+            for c in line.chars() {
+                result <<= 1;
+                result |= (c == '#') as u64;
+            }
+            result
         })
         .collect::<Vec<_>>();
 
-    let mut keys: Vec<Vec<u8>> = Vec::new();
-    let mut locks: Vec<Vec<u8>> = Vec::new();
+    let mut keys: Vec<u64> = Vec::new();
+    let mut locks: Vec<u64> = Vec::new();
 
     for grid in input {
-        let is_key = grid[0] == 0;
+        let is_key = grid & 1 == 0;
         if is_key {
             locks.push(grid)
         } else {
@@ -48,7 +44,7 @@ fn p1() {
     // try all keys on all locks to check fit
     for lock in &locks {
         for key in &keys {
-            let fits = key.iter().zip(lock.iter()).all(|(l, k)| l & k == 0);
+            let fits = key & lock == 0;
             if fits {
                 sum += 1;
             }
