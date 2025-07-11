@@ -1,4 +1,7 @@
-use aoc2024::{d01, d02, d03, d04, d05, d23, d25};
+use aoc2024::{
+    d01, d02, d03, d04, d05, d06, d07, d08, d09, d10, d11, d12, d13, d14, d15, d16, d17, d18, d19,
+    d20, d21, d22, d23, d24, d25,
+};
 use std::env;
 
 struct DayResult {
@@ -62,7 +65,25 @@ fn execute_day(day_num: u32, input: &str) -> Option<DayResult> {
         3 => run_day_solution(d03::Day03, input),
         4 => run_day_solution(d04::Day04, input),
         5 => run_day_solution(d05::Day05, input),
+        6 => run_day_solution(d06::Day06, input),
+        7 => run_day_solution(d07::Day07, input),
+        8 => run_day_solution(d08::Day08, input),
+        9 => run_day_solution(d09::Day09, input),
+        10 => run_day_solution(d10::Day10, input),
+        11 => run_day_solution(d11::Day11, input),
+        12 => run_day_solution(d12::Day12, input),
+        13 => run_day_solution(d13::Day13, input),
+        14 => run_day_solution(d14::Day14, input),
+        15 => run_day_solution(d15::Day15, input),
+        16 => run_day_solution(d16::Day16, input),
+        17 => run_day_solution(d17::Day17, input),
+        18 => run_day_solution(d18::Day18, input),
+        19 => run_day_solution(d19::Day19, input),
+        20 => run_day_solution(d20::Day20, input),
+        21 => run_day_solution(d21::Day21, input),
+        22 => run_day_solution(d22::Day22, input),
         23 => run_day_solution(d23::Day23, input),
+        24 => run_day_solution(d24::Day24, input),
         25 => run_day_solution(d25::Day25, input),
         _ => return None,
     };

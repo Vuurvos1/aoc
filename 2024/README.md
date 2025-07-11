@@ -18,6 +18,9 @@ cargo bench
 
 # single days
 cargo bench d01
+
+# utility benchmarks
+cargo bench utilities
 ```
 
 Note that I didn't solve all days using code, so not every day/part has a benchmark.
