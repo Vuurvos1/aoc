@@ -10,7 +10,11 @@ impl Solution for Day00 {
         0
     }
 
-    fn solve_p1(&self, input: &str) -> Self::Part1 {}
+    fn solve_p1(&self, input: &str) -> Self::Part1 {
+        0
+    }
 
-    fn solve_p2(&self, input: &str) -> Self::Part2 {}
+    fn solve_p2(&self, input: &str) -> Self::Part2 {
+        0
+    }
 }

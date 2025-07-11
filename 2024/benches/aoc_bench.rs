@@ -1,4 +1,6 @@
-use aoc2024::{d01::Day01, d23::Day23, d25::Day25, Solution};
+use aoc2024::{
+    d01::Day01, d02::Day02, d03::Day03, d04::Day04, d05::Day05, d23::Day23, d25::Day25, Solution,
+};
 use criterion::{criterion_group, criterion_main, Criterion};
 use std::time::Duration;
 
@@ -15,6 +17,10 @@ fn run_bench<S: Solution>(c: &mut Criterion, day: u32, solution: S) {
 
 fn all_benchmarks(c: &mut Criterion) {
     run_bench(c, 1, Day01);
+    run_bench(c, 2, Day02);
+    run_bench(c, 3, Day03);
+    run_bench(c, 4, Day04);
+    run_bench(c, 5, Day05);
     run_bench(c, 23, Day23);
     // run_bench(c, 24, Day24); // solved by hand
     run_bench(c, 25, Day25);
