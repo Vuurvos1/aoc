@@ -4,7 +4,7 @@ fn main() {
     println!("Hello, world!");
 }
 
-fn isSafeReport(v: Vec<i32>) -> bool {
+fn is_safe_report(v: Vec<i32>) -> bool {
     let mut split = v.iter();
     let mut sign_dir = 0;
 
@@ -42,7 +42,7 @@ fn p1() {
             .split_whitespace()
             .map(|x| x.parse::<i32>().unwrap())
             .collect();
-        let safe = isSafeReport(split);
+        let safe = is_safe_report(split);
 
         if safe {
             sum += 1;
@@ -65,7 +65,7 @@ fn p2() {
         for i in 0..v.len() {
             let mut c = v.clone();
             c.remove(i);
-            let safe = isSafeReport(c);
+            let safe = is_safe_report(c);
             if safe {
                 sum += 1;
                 break;
