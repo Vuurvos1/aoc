@@ -6,10 +6,6 @@ impl Solution for Day02 {
     type Part1 = u32;
     type Part2 = u32;
 
-    fn day(&self) -> u32 {
-        2
-    }
-
     fn solve_p1(&self, input: &str) -> Self::Part1 {
         let mut sum = 0;
 

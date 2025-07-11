@@ -12,9 +12,6 @@ pub trait Solution {
     type Part1: Display;
     type Part2: Display;
 
-    // TODO: remove this?
-    fn day(&self) -> u32;
-
     fn solve_p1(&self, input: &str) -> Self::Part1;
     fn solve_p2(&self, input: &str) -> Self::Part2;
 }

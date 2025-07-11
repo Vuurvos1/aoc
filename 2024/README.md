@@ -17,7 +17,7 @@ cargo run --bin main all
 cargo bench
 
 # single days
-cargo bench 1
+cargo bench d01
 ```
 
 Note that I didn't solve all days using code, so not every day/part has a benchmark.

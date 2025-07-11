@@ -8,10 +8,6 @@ impl Solution for Day01 {
     type Part1 = u32;
     type Part2 = u32;
 
-    fn day(&self) -> u32 {
-        1
-    }
-
     fn solve_p1(&self, input: &str) -> Self::Part1 {
         let mut c1 = Vec::new();
         let mut c2 = Vec::new();

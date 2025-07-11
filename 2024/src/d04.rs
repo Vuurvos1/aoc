@@ -6,14 +6,8 @@ impl Solution for Day04 {
     type Part1 = u32;
     type Part2 = u32;
 
-    fn day(&self) -> u32 {
-        4
-    }
-
     fn solve_p1(&self, input: &str) -> Self::Part1 {
         let grid = input
-            .trim_end()
-            .to_string()
             .split("\n")
             .map(|line| line.chars().collect::<Vec<char>>())
             .collect::<Vec<Vec<char>>>();
@@ -31,7 +25,6 @@ impl Solution for Day04 {
                 if i > 2 && grid[i - 1][j] == 'M' && grid[i - 2][j] == 'A' && grid[i - 3][j] == 'S'
                 {
                     total += 1;
-                    continue;
                 }
 
                 // check down
@@ -41,7 +34,6 @@ impl Solution for Day04 {
                     && grid[i + 3][j] == 'S'
                 {
                     total += 1;
-                    continue;
                 }
 
                 // check left
@@ -57,7 +49,6 @@ impl Solution for Day04 {
                     && grid[i][j + 3] == 'S'
                 {
                     total += 1;
-                    continue;
                 }
 
                 // check up-left
@@ -68,7 +59,6 @@ impl Solution for Day04 {
                     && grid[i - 3][j - 3] == 'S'
                 {
                     total += 1;
-                    continue;
                 }
 
                 // check up-right
@@ -79,7 +69,6 @@ impl Solution for Day04 {
                     && grid[i - 3][j + 3] == 'S'
                 {
                     total += 1;
-                    continue;
                 }
 
                 // check down-left
@@ -90,7 +79,6 @@ impl Solution for Day04 {
                     && grid[i + 3][j - 3] == 'S'
                 {
                     total += 1;
-                    continue;
                 }
 
                 // check down-right
@@ -109,8 +97,6 @@ impl Solution for Day04 {
     }
 
     fn solve_p2(&self, input: &str) -> Self::Part2 {
-        let input = input.trim_end().to_string();
-
         let grid = input
             .split("\n")
             .map(|line| line.chars().collect::<Vec<char>>())

@@ -8,10 +8,6 @@ impl Solution for Day05 {
     type Part1 = i32;
     type Part2 = i32;
 
-    fn day(&self) -> u32 {
-        0
-    }
-
     fn solve_p1(&self, input: &str) -> Self::Part1 {
         let input = input.trim_end().to_string();
 

@@ -6,7 +6,8 @@ use std::time::Duration;
 
 fn run_bench<S: Solution>(c: &mut Criterion, day: u32, solution: S) {
     let input = std::fs::read_to_string(format!("inputs/d{:02}.txt", day)).unwrap();
-    let mut group = c.benchmark_group(format!("Day {:02}", day));
+    let input = input.trim_end();
+    let mut group = c.benchmark_group(format!("d{:02}", day));
     group
         .measurement_time(Duration::from_secs(10))
         .sample_size(10);

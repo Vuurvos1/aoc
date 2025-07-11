@@ -1,8 +1,8 @@
 [workspace]
 members = [
   "2016/d01", 
-  "2017/d01", "2017/d02", "2017/d03"
+  "2017/d01", "2017/d02", "2017/d03",
+  "2024"
 ]
-exclude = ["2024"]
 
 [workspace.dependencies]

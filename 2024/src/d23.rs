@@ -7,10 +7,6 @@ impl Solution for Day23 {
     type Part1 = usize;
     type Part2 = String;
 
-    fn day(&self) -> u32 {
-        23
-    }
-
     fn solve_p1(&self, input: &str) -> Self::Part1 {
         let links = parse_input(input);
         let connection_graph = get_connections(links);

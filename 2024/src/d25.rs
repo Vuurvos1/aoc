@@ -6,10 +6,6 @@ impl Solution for Day25 {
     type Part1 = usize;
     type Part2 = u32;
 
-    fn day(&self) -> u32 {
-        25
-    }
-
     fn solve_p1(&self, input: &str) -> Self::Part1 {
         let input = input
             .split("\n\n")

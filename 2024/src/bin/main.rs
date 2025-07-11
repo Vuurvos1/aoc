@@ -53,6 +53,7 @@ fn run_single_day(day_num: u32) {
 }
 
 fn execute_day(day_num: u32, input: &str) -> Option<DayResult> {
+    let input = input.trim_end();
     let total_start = std::time::Instant::now();
 
     let (p1_result, p2_result, p1_time, p2_time) = match day_num {
