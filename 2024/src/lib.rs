@@ -1,5 +1,7 @@
 use std::fmt::Display;
 
+pub mod utils;
+
 pub mod d01;
 pub mod d02;
 pub mod d03;

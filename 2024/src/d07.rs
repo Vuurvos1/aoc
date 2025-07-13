@@ -1,10 +1,10 @@
-use crate::Solution;
+use crate::{utils::concat_numbers, Solution};
 
 pub struct Day07;
 
 impl Solution for Day07 {
-    type Part1 = i64;
-    type Part2 = i64;
+    type Part1 = u64;
+    type Part2 = u64;
 
     fn solve_p1(&self, input: &str) -> Self::Part1 {
         let operations = vec!['+', '*'];
@@ -14,11 +14,11 @@ impl Solution for Day07 {
         for line in input.lines() {
             // get all numbers in line
             let s = line.split(": ").collect::<Vec<&str>>();
-            let awnser = s[0].parse::<i64>().unwrap();
+            let awnser = s[0].parse::<u64>().unwrap();
             let digits = s[1]
                 .split(" ")
-                .map(|x| x.parse::<i64>().unwrap())
-                .collect::<Vec<i64>>();
+                .map(|x| x.parse::<u64>().unwrap())
+                .collect::<Vec<u64>>();
 
             // try all combinations of operations on all digits to see if one procudes the awnser
             let result = math_numbers(digits[0], awnser, &digits[1..].to_vec(), &operations);
@@ -38,11 +38,11 @@ impl Solution for Day07 {
         for line in input.lines() {
             // get all numbers in line
             let s = line.split(": ").collect::<Vec<&str>>();
-            let awnser = s[0].parse::<i64>().unwrap();
+            let awnser = s[0].parse::<u64>().unwrap();
             let digits = s[1]
                 .split(" ")
-                .map(|x| x.parse::<i64>().unwrap())
-                .collect::<Vec<i64>>();
+                .map(|x| x.parse::<u64>().unwrap())
+                .collect::<Vec<u64>>();
 
             // try all combinations of operations on all digits to see if one procudes the awnser
             let result = math_numbers(digits[0], awnser, &digits[1..].to_vec(), &operations);
@@ -55,8 +55,8 @@ impl Solution for Day07 {
     }
 }
 
-// recursive function to try all combinations of operations on all digits
-fn math_numbers(sum: i64, awnser: i64, digits: &Vec<i64>, operations: &Vec<char>) -> bool {
+/// try all combinations of operations on all digits
+fn math_numbers(sum: u64, awnser: u64, digits: &Vec<u64>, operations: &Vec<char>) -> bool {
     if digits.len() == 0 {
         return sum == awnser;
     }
@@ -74,7 +74,7 @@ fn math_numbers(sum: i64, awnser: i64, digits: &Vec<i64>, operations: &Vec<char>
         match op {
             '+' => new_sum += digit,
             '*' => new_sum *= digit,
-            '|' => new_sum = sum * 10_i64.pow(digit.to_string().len() as u32) + digit,
+            '|' => new_sum = concat_numbers(sum, digit),
             _ => panic!("Unknown operation"),
         }
 

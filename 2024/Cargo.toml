@@ -15,7 +15,11 @@ criterion = { version = "0.5", features = ["html_reports"] }
 
 [[bench]]
 name = "aoc_bench"
-harness = false 
+harness = false
+
+[[bench]]
+name = "utilities_bench"
+harness = false
 
 [[bin]]
 name = "fetch_input"
