@@ -1,5 +1,18 @@
 # AOC 2024
 
+## Fetching Inputs
+
+Create a `.env` file based on the `.env.example` file.
+You can get the session cookie from the browser dev tools.
+
+```bash
+# fetch input for a specific day (defaults to current year)
+cargo run --bin fetch_input 1
+
+# fetch input for a specific day and year
+cargo run --bin fetch_input 1 2023
+```
+
 ## Running
 
 ```bash
@@ -23,4 +36,5 @@ cargo bench d01
 cargo bench utilities
 ```
 
-Note that I didn't solve all days using code, so not every day/part has a benchmark.
+> [!NOTE]
+> Note that I didn't solve all days using code, so not every day/part has a benchmark.
