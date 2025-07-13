@@ -1,0 +1,26 @@
+[package]
+name = "aoc2024"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+regex = "1.11.1"
+reqwest = "0.12.22"
+tokio = { version = "1.0", features = ["full"] }
+dotenv = "0.15"
+chrono = "0.4.41"
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[[bench]]
+name = "aoc_bench"
+harness = false
+
+[[bench]]
+name = "utilities_bench"
+harness = false
+
+[[bin]]
+name = "fetch_input"
+path = "src/bin/fetch_input.rs"
