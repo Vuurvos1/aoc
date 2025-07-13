@@ -17,10 +17,10 @@ cargo run --bin fetch_input 1 2023
 
 ```bash
 # single day
-cargo run --bin main 1
+cargo run --release --bin main 1
 
 # all days
-cargo run --bin main all
+cargo run --release --bin main all
 ```
 
 ## Benchmarking

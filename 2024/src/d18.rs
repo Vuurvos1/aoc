@@ -73,8 +73,8 @@ impl Solution for Day18 {
         let mut cache: HashSet<(i32, i32)> = HashSet::new();
         let mut stack: VecDeque<(i32, i32)> = VecDeque::new();
 
-        let mut blocked: (i32, i32) = (0, 0);
-        let mut block_index = 0;
+        let blocked: (i32, i32);
+        // let mut block_index = 0;
 
         let mut search_min: usize = 1024;
         let mut search_max: usize = input.len();
@@ -117,7 +117,7 @@ impl Solution for Day18 {
 
             if search_max - search_min <= 1 {
                 blocked = input[search_min];
-                block_index = search_min;
+                // block_index = search_min;
                 break;
             }
         }
