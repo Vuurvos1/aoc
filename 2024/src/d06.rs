@@ -25,7 +25,7 @@ impl Solution for Day06 {
             }
         }
 
-        println!("{:?}", pos);
+        // println!("{:?}", pos);
 
         let mut direction: (i32, i32) = (-1, 0); // up
         let mut visited: HashSet<(i32, i32)> = HashSet::new();

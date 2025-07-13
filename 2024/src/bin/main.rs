@@ -44,7 +44,8 @@ fn run_all_days() {
 }
 
 fn run_single_day(day_num: u32) {
-    let input = std::fs::read_to_string(format!("./inputs/d{:02}.txt", day_num)).unwrap();
+    let input = std::fs::read_to_string(format!("./inputs/d{:02}.txt", day_num))
+        .expect(&format!("Input file not found for day {}", day_num));
 
     println!("--- Day {} ---", day_num);
 
@@ -56,35 +57,35 @@ fn run_single_day(day_num: u32) {
 }
 
 fn execute_day(day_num: u32, input: &str) -> Option<DayResult> {
-    let input = input.trim_end();
+    let input = normalize_input(input);
     let total_start = std::time::Instant::now();
 
     let (p1_result, p2_result, p1_time, p2_time) = match day_num {
-        1 => run_day_solution(d01::Day01, input),
-        2 => run_day_solution(d02::Day02, input),
-        3 => run_day_solution(d03::Day03, input),
-        4 => run_day_solution(d04::Day04, input),
-        5 => run_day_solution(d05::Day05, input),
-        6 => run_day_solution(d06::Day06, input),
-        7 => run_day_solution(d07::Day07, input),
-        8 => run_day_solution(d08::Day08, input),
-        9 => run_day_solution(d09::Day09, input),
-        10 => run_day_solution(d10::Day10, input),
-        11 => run_day_solution(d11::Day11, input),
-        12 => run_day_solution(d12::Day12, input),
-        13 => run_day_solution(d13::Day13, input),
-        14 => run_day_solution(d14::Day14, input),
-        15 => run_day_solution(d15::Day15, input),
-        16 => run_day_solution(d16::Day16, input),
-        17 => run_day_solution(d17::Day17, input),
-        18 => run_day_solution(d18::Day18, input),
-        19 => run_day_solution(d19::Day19, input),
-        20 => run_day_solution(d20::Day20, input),
-        21 => run_day_solution(d21::Day21, input),
-        22 => run_day_solution(d22::Day22, input),
-        23 => run_day_solution(d23::Day23, input),
-        24 => run_day_solution(d24::Day24, input),
-        25 => run_day_solution(d25::Day25, input),
+        1 => run_day_solution(d01::Day01, &input),
+        2 => run_day_solution(d02::Day02, &input),
+        3 => run_day_solution(d03::Day03, &input),
+        4 => run_day_solution(d04::Day04, &input),
+        5 => run_day_solution(d05::Day05, &input),
+        6 => run_day_solution(d06::Day06, &input),
+        7 => run_day_solution(d07::Day07, &input),
+        8 => run_day_solution(d08::Day08, &input),
+        9 => run_day_solution(d09::Day09, &input),
+        10 => run_day_solution(d10::Day10, &input),
+        11 => run_day_solution(d11::Day11, &input),
+        12 => run_day_solution(d12::Day12, &input),
+        13 => run_day_solution(d13::Day13, &input),
+        14 => run_day_solution(d14::Day14, &input),
+        15 => run_day_solution(d15::Day15, &input),
+        16 => run_day_solution(d16::Day16, &input),
+        17 => run_day_solution(d17::Day17, &input),
+        18 => run_day_solution(d18::Day18, &input),
+        19 => run_day_solution(d19::Day19, &input),
+        20 => run_day_solution(d20::Day20, &input),
+        21 => run_day_solution(d21::Day21, &input),
+        22 => run_day_solution(d22::Day22, &input),
+        23 => run_day_solution(d23::Day23, &input),
+        24 => run_day_solution(d24::Day24, &input),
+        25 => run_day_solution(d25::Day25, &input),
         _ => return None,
     };
 
@@ -131,4 +132,13 @@ fn print_compact(day_num: u32, result: &DayResult) {
         "Day {}: Total={:.2?} | P1={:.2?} | P2={:.2?}",
         day_num, result.total_time, result.p1_time, result.p2_time
     );
+}
+
+fn normalize_input(input: &str) -> String {
+    input
+        .lines()
+        .collect::<Vec<_>>()
+        .join("\n")
+        .trim()
+        .to_string()
 }

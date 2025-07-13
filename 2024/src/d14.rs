@@ -52,7 +52,7 @@ impl Solution for Day14 {
         sum
     }
 
-    fn solve_p2(&self, input: &str) -> Self::Part2 {
+    fn solve_p2(&self, _input: &str) -> Self::Part2 {
         0
     }
 }

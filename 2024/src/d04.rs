@@ -9,7 +9,8 @@ impl Solution for Day04 {
     fn solve_p1(&self, input: &str) -> Self::Part1 {
         let grid = input
             .split("\n")
-            .map(|line| line.chars().collect::<Vec<char>>())
+            .filter(|line| !line.trim().is_empty())
+            .map(|line| line.trim().chars().collect::<Vec<char>>())
             .collect::<Vec<Vec<char>>>();
 
         let mut total = 0;
@@ -99,7 +100,8 @@ impl Solution for Day04 {
     fn solve_p2(&self, input: &str) -> Self::Part2 {
         let grid = input
             .split("\n")
-            .map(|line| line.chars().collect::<Vec<char>>())
+            .filter(|line| !line.trim().is_empty())
+            .map(|line| line.trim().chars().collect::<Vec<char>>())
             .collect::<Vec<Vec<char>>>();
 
         let mut total = 0;

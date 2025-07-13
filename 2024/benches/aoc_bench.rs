@@ -9,9 +9,10 @@ use std::time::Duration;
 
 fn run_bench<S: Solution>(c: &mut Criterion, day: u32, solution: S) {
     let input = std::fs::read_to_string(format!("inputs/d{:02}.txt", day)).unwrap();
-    let input = input.trim_end();
+    let input = normalize_input(&input);
     let mut group = c.benchmark_group(format!("d{:02}", day));
     group
+        .warm_up_time(Duration::from_secs(3))
         .measurement_time(Duration::from_secs(10))
         .sample_size(10);
     group.bench_function("Part 1", |b| b.iter(|| solution.solve_p1(&input)));
@@ -49,3 +50,12 @@ fn all_benchmarks(c: &mut Criterion) {
 
 criterion_group!(benches, all_benchmarks);
 criterion_main!(benches);
+
+fn normalize_input(input: &str) -> String {
+    input
+        .lines()
+        .collect::<Vec<_>>()
+        .join("\n")
+        .trim()
+        .to_string()
+}

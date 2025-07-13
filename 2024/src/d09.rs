@@ -136,8 +136,6 @@ impl Solution for Day09 {
             }
         }
 
-        println!("Hello, world! {}", sum);
-
         sum
     }
 }
