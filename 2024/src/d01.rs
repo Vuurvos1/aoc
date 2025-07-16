@@ -9,47 +9,38 @@ impl Solution for Day01 {
     type Part2 = u32;
 
     fn solve_p1(&self, input: &str) -> Self::Part1 {
-        let mut c1 = Vec::new();
-        let mut c2 = Vec::new();
+        let (mut c1, mut c2) = parse_input(input);
 
-        for line in input.lines() {
-            let mut split = line.split_whitespace().map(|x| x.parse::<u32>().unwrap());
-            c1.push(split.next());
-            c2.push(split.next());
-        }
+        c1.sort_unstable();
+        c2.sort_unstable();
 
-        c1.sort();
-        c2.sort();
-
-        c1.iter()
-            .zip(c2.iter())
-            .map(|(a, b)| a.unwrap().abs_diff(b.unwrap()))
-            .sum()
+        c1.iter().zip(c2.iter()).map(|(a, b)| a.abs_diff(*b)).sum()
     }
 
     fn solve_p2(&self, input: &str) -> Self::Part2 {
-        let mut sum: u32 = 0;
-
-        let mut c1 = Vec::new();
-        let mut c2 = Vec::new();
-
-        for line in input.lines() {
-            let mut split = line.split_whitespace().map(|x| x.parse::<u32>().unwrap());
-            c1.push(split.next().unwrap());
-            c2.push(split.next().unwrap());
-        }
+        let (c1, c2) = parse_input(input);
 
         let mut occurances: HashMap<u32, u32> = HashMap::new();
         for b in c2 {
-            let count = occurances.entry(b).or_insert(0);
-            *count += 1;
+            *occurances.entry(b).or_insert(0) += 1;
         }
 
-        for a in c1 {
-            let count = occurances.entry(a).or_default();
-            sum += *count * a;
-        }
-
-        sum
+        c1.iter()
+            .map(|&a| occurances.get(&a).unwrap_or(&0) * a)
+            .sum()
     }
+}
+
+fn parse_input(input: &str) -> (Vec<u32>, Vec<u32>) {
+    let mut c1 = Vec::with_capacity(1000);
+    let mut c2 = Vec::with_capacity(1000);
+
+    for line in input.lines() {
+        if let Some((a, b)) = line.split_once("   ") {
+            c1.push(a.parse::<u32>().unwrap());
+            c2.push(b.parse::<u32>().unwrap());
+        }
+    }
+
+    (c1, c2)
 }
