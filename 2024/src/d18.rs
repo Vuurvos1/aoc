@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{HashSet, VecDeque};
 
 use crate::Solution;
 
@@ -9,60 +9,49 @@ impl Solution for Day18 {
     type Part2 = String;
 
     fn solve_p1(&self, input: &str) -> Self::Part1 {
-        let grid: HashSet<(i32, i32)> = input
-            .lines()
-            .take(1024)
-            .map(|line| {
-                let bits = line
-                    .split(',')
-                    .map(|x| x.parse().unwrap())
-                    .collect::<Vec<i32>>();
-                (bits[0], bits[1])
-            })
-            .collect();
+        let mut grid: [[bool; 71]; 71] = [[false; 71]; 71];
+        for line in input.lines().take(1024) {
+            let (a, b) = line.split_once(',').unwrap();
+            let (x, y): (usize, usize) = (a.parse().unwrap(), b.parse().unwrap());
+            grid[x][y] = true;
+        }
 
         let directions = [(0, 1), (1, 0), (0, -1), (-1, 0)];
         let start_pos = (0, 0);
         let finish_pos = (70, 70);
 
-        let mut cache: HashMap<(i32, i32), u32> = HashMap::new();
         let mut stack: VecDeque<((i32, i32), u32)> = VecDeque::new();
-        let mut min: u32 = u32::MAX;
+        let mut visited: HashSet<_> = HashSet::new();
         stack.push_back((start_pos, 0));
 
         while let Some((pos, score)) = stack.pop_front() {
             if pos == finish_pos {
-                min = min.min(score);
-                break;
+                return score;
             }
 
-            if let Some(&old_score) = cache.get(&pos) {
-                if score >= old_score {
-                    continue;
-                }
+            if !visited.insert(pos) {
+                continue;
             }
-            cache.insert((pos.0, pos.1), score);
 
             for &(dy, dx) in &directions {
                 let new_pos = (pos.0 + dx, pos.1 + dy);
-                if inbounds(new_pos.1, new_pos.0, 71) && !grid.contains(&(new_pos.0, new_pos.1)) {
+                if inbounds(new_pos.0, new_pos.1, 71)
+                    && !grid[new_pos.0 as usize][new_pos.1 as usize]
+                {
                     stack.push_back((new_pos, score + 1));
                 }
             }
         }
 
-        min
+        0
     }
 
     fn solve_p2(&self, input: &str) -> Self::Part2 {
-        let input: Vec<(i32, i32)> = input
+        let input: Vec<(usize, usize)> = input
             .lines()
             .map(|line| {
-                let bits = line
-                    .split(',')
-                    .map(|x| x.parse().unwrap())
-                    .collect::<Vec<i32>>();
-                (bits[0], bits[1])
+                let (a, b) = line.split_once(',').unwrap();
+                (a.parse().unwrap(), b.parse().unwrap())
             })
             .collect();
 
@@ -73,8 +62,7 @@ impl Solution for Day18 {
         let mut cache: HashSet<(i32, i32)> = HashSet::new();
         let mut stack: VecDeque<(i32, i32)> = VecDeque::new();
 
-        let blocked: (i32, i32);
-        // let mut block_index = 0;
+        let blocked;
 
         let mut search_min: usize = 1024;
         let mut search_max: usize = input.len();
@@ -86,7 +74,11 @@ impl Solution for Day18 {
             stack.push_back(start_pos);
 
             let search_mid = (search_min + search_max) / 2 + 1;
-            let map_bytes: HashSet<(i32, i32)> = input.iter().take(search_mid).cloned().collect();
+
+            let mut grid = [[false; 71]; 71];
+            for &(x, y) in input.iter().take(search_mid) {
+                grid[x][y] = true;
+            }
 
             while let Some(pos) = stack.pop_front() {
                 if pos == finish_pos {
@@ -101,8 +93,8 @@ impl Solution for Day18 {
 
                 for &(dy, dx) in &directions {
                     let new_pos = (pos.0 + dx, pos.1 + dy);
-                    if inbounds(new_pos.1, new_pos.0, 71)
-                        && !map_bytes.contains(&(new_pos.0, new_pos.1))
+                    if inbounds(new_pos.0, new_pos.1, 71)
+                        && !grid[new_pos.0 as usize][new_pos.1 as usize]
                     {
                         stack.push_back(new_pos);
                     }
@@ -117,12 +109,10 @@ impl Solution for Day18 {
 
             if search_max - search_min <= 1 {
                 blocked = input[search_min];
-                // block_index = search_min;
                 break;
             }
         }
 
-        // println!("Hello, world! {},{} {}", blocked.0, blocked.1, block_index);
         format!("{},{}", blocked.0, blocked.1)
     }
 }

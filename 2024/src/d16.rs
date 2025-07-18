@@ -80,28 +80,27 @@ impl Solution for Day16 {
         let mut cache: HashMap<(i32, i32, i32, i32), u64> = HashMap::new();
         let mut stack: VecDeque<((i32, i32), (i32, i32), u64, Vec<(i32, i32)>)> = VecDeque::new();
         let mut path_tiles: HashSet<(i32, i32)> = HashSet::new();
-        let mut min: u64 = u64::MAX;
+
         stack.push_back((start_pos, (0, 1), 0, Vec::new()));
 
-        while stack.len() > 0 {
-            let (pos, dir, score, mut path) = stack.pop_front().unwrap();
+        while let Some((pos, dir, score, mut path)) = stack.pop_front() {
             path.push(pos);
 
             if score > p1_score {
                 continue;
             }
 
+            let state = (pos.0, pos.1, dir.0, dir.1);
+
             // update cache score if current score is lower
-            if cache.contains_key(&(pos.0, pos.1, dir.0, dir.1)) {
-                let old_score = cache.get(&(pos.0, pos.1, dir.0, dir.1)).unwrap();
-                if score > *old_score {
+            if let Some(&old_score) = cache.get(&state) {
+                if score > old_score {
                     continue;
                 }
             }
-            cache.insert((pos.0, pos.1, dir.0, dir.1), score);
+            cache.insert(state, score);
 
             if grid[pos.0 as usize][pos.1 as usize] == 'E' {
-                min = min.min(score);
                 path_tiles.extend(path);
                 continue;
             }

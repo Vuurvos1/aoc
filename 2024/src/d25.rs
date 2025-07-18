@@ -11,16 +11,17 @@ impl Solution for Day25 {
             .split("\n\n")
             .map(|line| {
                 let mut result = 0;
-                for c in line.chars() {
+                let bytes = line.as_bytes();
+                for &c in &bytes[6..] {
                     result <<= 1;
-                    result |= (c == '#') as u64;
+                    result |= (c == b'#') as u64;
                 }
                 result
             })
             .collect::<Vec<_>>();
 
-        let mut keys: Vec<u64> = Vec::new();
-        let mut locks: Vec<u64> = Vec::new();
+        let mut keys: Vec<u64> = Vec::with_capacity(input.len() / 2);
+        let mut locks: Vec<u64> = Vec::with_capacity(input.len() / 2);
 
         for grid in input {
             let is_key = grid & 1 == 0;
@@ -31,19 +32,10 @@ impl Solution for Day25 {
             }
         }
 
-        let mut sum = 0;
-
         // try all keys on all locks to check fit
-        for lock in &locks {
-            for key in &keys {
-                let fits = key & lock == 0;
-                if fits {
-                    sum += 1;
-                }
-            }
-        }
-
-        sum
+        keys.iter()
+            .map(|&key| locks.iter().filter(|&&lock| key & lock == 0).count())
+            .sum()
     }
 
     fn solve_p2(&self, _input: &str) -> Self::Part2 {
