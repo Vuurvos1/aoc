@@ -7,22 +7,19 @@ impl Solution for Day07 {
     type Part2 = u64;
 
     fn solve_p1(&self, input: &str) -> Self::Part1 {
-        let operations = vec!['+', '*'];
-
         let mut sum = 0;
 
         for line in input.lines() {
             // get all numbers in line
-            let s = line.split(": ").collect::<Vec<&str>>();
-            let awnser = s[0].parse::<u64>().unwrap();
-            let digits = s[1]
+            let (s1, s2) = line.split_once(": ").unwrap();
+            let awnser = s1.parse::<u64>().unwrap();
+            let digits = s2
                 .split(" ")
                 .map(|x| x.parse::<u64>().unwrap())
                 .collect::<Vec<u64>>();
 
             // try all combinations of operations on all digits to see if one procudes the awnser
-            let result = math_numbers(digits[0], awnser, &digits[1..].to_vec(), &operations);
-            if result {
+            if math_numbers(digits[0], awnser, &digits, 1, &['+', '*']) {
                 sum += awnser;
             }
         }
@@ -31,22 +28,19 @@ impl Solution for Day07 {
     }
 
     fn solve_p2(&self, input: &str) -> Self::Part2 {
-        let operations = vec!['+', '*', '|'];
-
         let mut sum = 0;
 
         for line in input.lines() {
             // get all numbers in line
-            let s = line.split(": ").collect::<Vec<&str>>();
-            let awnser = s[0].parse::<u64>().unwrap();
-            let digits = s[1]
+            let (s1, s2) = line.split_once(": ").unwrap();
+            let awnser = s1.parse::<u64>().unwrap();
+            let digits = s2
                 .split(" ")
                 .map(|x| x.parse::<u64>().unwrap())
                 .collect::<Vec<u64>>();
 
             // try all combinations of operations on all digits to see if one procudes the awnser
-            let result = math_numbers(digits[0], awnser, &digits[1..].to_vec(), &operations);
-            if result {
+            if math_numbers(digits[0], awnser, &digits, 1, &['+', '*', '|']) {
                 sum += awnser;
             }
         }
@@ -56,8 +50,14 @@ impl Solution for Day07 {
 }
 
 /// try all combinations of operations on all digits
-fn math_numbers(sum: u64, awnser: u64, digits: &Vec<u64>, operations: &Vec<char>) -> bool {
-    if digits.len() == 0 {
+fn math_numbers(
+    sum: u64,
+    awnser: u64,
+    digits: &Vec<u64>,
+    index: usize,
+    operations: &[char],
+) -> bool {
+    if index == digits.len() {
         return sum == awnser;
     }
 
@@ -66,23 +66,35 @@ fn math_numbers(sum: u64, awnser: u64, digits: &Vec<u64>, operations: &Vec<char>
         return false;
     }
 
-    let mut new_digits = digits.clone();
-    let digit = new_digits.remove(0);
+    let digit = digits[index];
 
-    for op in operations {
-        let mut new_sum = sum;
-        match op {
-            '+' => new_sum += digit,
-            '*' => new_sum *= digit,
-            '|' => new_sum = concat_numbers(sum, digit),
+    for &op in operations {
+        let new_sum = match op {
+            '+' => sum + digit,
+            '*' => sum * digit,
+            '|' => concat_numbers(sum, digit),
             _ => panic!("Unknown operation"),
-        }
+        };
 
-        let new_result = math_numbers(new_sum, awnser, &new_digits, operations);
-        if new_result {
-            return new_result;
+        if math_numbers(new_sum, awnser, digits, index + 1, operations) {
+            return true;
         }
     }
 
-    return false;
+    false
+}
+
+#[test]
+fn part1_example() {
+    let input = "190: 10 19
+3267: 81 40 27
+83: 17 5
+156: 15 6
+7290: 6 8 6 15
+161011: 16 10 13
+192: 17 8 14
+21037: 9 7 18 13
+292: 11 6 16 20";
+
+    assert_eq!(Day07.solve_p1(&input), 3749);
 }

@@ -21,10 +21,13 @@ impl Solution for Day23 {
         let links = parse_input(input);
         let connection_graph = get_connections(links);
         let mut cliques: Vec<HashSet<&str>> = Vec::new();
+
+        let mut p_set: HashSet<&str> = connection_graph.keys().cloned().collect();
+
         bron_kerbosch(
-            HashSet::new(),
-            connection_graph.keys().cloned().collect(),
-            HashSet::new(),
+            &mut HashSet::new(),
+            &mut p_set,
+            &mut HashSet::new(),
             &connection_graph,
             &mut cliques,
         );
@@ -71,30 +74,28 @@ fn find_triangles(graph: Graph) -> HashSet<Triangle> {
 }
 
 fn bron_kerbosch<'a>(
-    r: HashSet<&'a str>,
-    p: HashSet<&'a str>,
-    x: HashSet<&'a str>,
+    r: &mut HashSet<&'a str>,
+    p: &mut HashSet<&'a str>,
+    x: &mut HashSet<&'a str>,
     graph: &Graph<'a>,
     cliques: &mut Vec<HashSet<&'a str>>,
 ) {
     if p.is_empty() && x.is_empty() {
-        cliques.push(r);
+        cliques.push(r.clone());
         return;
     }
 
-    let mut p = p.clone();
-    let mut x = x.clone();
-
     let vertices: Vec<_> = p.iter().cloned().collect();
     for v in vertices {
-        let mut new_r = r.clone();
-        new_r.insert(v);
+        r.insert(v);
 
-        let new_p: HashSet<_> = p.intersection(graph.get(v).unwrap()).copied().collect();
-        let new_x: HashSet<_> = x.intersection(graph.get(v).unwrap()).copied().collect();
+        let neighbors = graph.get(v).unwrap();
+        let mut new_p: HashSet<_> = p.intersection(neighbors).copied().collect();
+        let mut new_x: HashSet<_> = x.intersection(neighbors).copied().collect();
 
-        bron_kerbosch(new_r, new_p, new_x, graph, cliques);
+        bron_kerbosch(r, &mut new_p, &mut new_x, graph, cliques);
 
+        r.remove(&v);
         p.remove(&v);
         x.insert(v);
     }
