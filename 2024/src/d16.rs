@@ -1,9 +1,36 @@
+use std::cmp::Ordering;
 use std::cmp::Reverse;
-use std::collections::{BinaryHeap, HashMap, HashSet, VecDeque};
+use std::collections::{BinaryHeap, HashMap, HashSet};
 
 use crate::Solution;
 
 pub struct Day16;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+struct State {
+    x: i16,
+    y: i16,
+    dir_x: i16,
+    dir_y: i16,
+}
+
+impl State {
+    fn new(x: i16, y: i16, dir_x: i16, dir_y: i16) -> Self {
+        Self { x, y, dir_x, dir_y }
+    }
+}
+
+impl PartialOrd for State {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for State {
+    fn cmp(&self, other: &Self) -> Ordering {
+        (self.x, self.y, self.dir_x, self.dir_y).cmp(&(other.x, other.y, other.dir_x, other.dir_y))
+    }
+}
 
 impl Solution for Day16 {
     type Part1 = u64;
@@ -12,60 +39,71 @@ impl Solution for Day16 {
     fn solve_p1(&self, input: &str) -> Self::Part1 {
         let (grid, start_pos) = parse_input(input);
 
-        let mut distances: HashMap<(i32, i32, i32, i32), u64> = HashMap::new();
-        let mut heap: BinaryHeap<Reverse<(u64, (i32, i32), (i32, i32))>> = BinaryHeap::new();
-        let mut visited: HashSet<(i32, i32, i32, i32)> = HashSet::new();
+        let mut distances: HashMap<u64, u64> = HashMap::new();
+        let mut heap: BinaryHeap<Reverse<(u64, State)>> = BinaryHeap::new();
+        let mut visited: HashSet<u64> = HashSet::new();
 
-        let start_state = (start_pos.0, start_pos.1, 0, 1); // facing east initially
-        distances.insert(start_state, 0);
-        heap.push(Reverse((0, start_pos, (0, 1))));
+        let start_state = State::new(start_pos.0, start_pos.1, 0, 1); // facing east initially
+        let pack_64 = unsafe { std::mem::transmute(start_state) };
 
-        while let Some(Reverse((score, pos, dir))) = heap.pop() {
-            let state = (pos.0, pos.1, dir.0, dir.1);
+        distances.insert(pack_64, 0);
+        heap.push(Reverse((0, start_state)));
 
-            if visited.contains(&state) {
+        while let Some(Reverse((score, state))) = heap.pop() {
+            let pack_64 = unsafe { std::mem::transmute(state) };
+
+            if visited.contains(&pack_64) {
                 continue;
             }
-            visited.insert(state);
+            visited.insert(pack_64);
 
             // arrived at the end
-            if grid[pos.0 as usize][pos.1 as usize] == 'E' {
+            if grid[state.x as usize][state.y as usize] == b'E' {
                 return score;
             }
 
             let next_moves = [
                 // Move forward
-                (score + 1, (pos.0 + dir.0, pos.1 + dir.1), dir),
+                (
+                    score + 1,
+                    (
+                        state.x + state.dir_x,
+                        state.y + state.dir_y,
+                        state.dir_x,
+                        state.dir_y,
+                    ),
+                ),
                 // Rotate clockwise
-                (score + 1000, pos, (dir.1, -dir.0)),
+                (score + 1000, (state.x, state.y, state.dir_y, -state.dir_x)),
                 // Rotate counterclockwise
-                (score + 1000, pos, (-dir.1, dir.0)),
+                (score + 1000, (state.x, state.y, -state.dir_y, state.dir_x)),
             ];
 
-            for (new_score, new_pos, new_dir) in next_moves {
+            for (new_score, new_state) in next_moves {
                 // Check bounds and walls
-                if !inbounds(new_pos.1, new_pos.0, &grid)
-                    || grid[new_pos.0 as usize][new_pos.1 as usize] == '#'
+                if !inbounds(new_state.0, new_state.1, &grid)
+                    || grid[new_state.0 as usize][new_state.1 as usize] == b'#'
                 {
                     continue;
                 }
 
-                let new_state = (new_pos.0, new_pos.1, new_dir.0, new_dir.1);
+                let new_state = State::new(new_state.0, new_state.1, new_state.2, new_state.3);
+                let pack_64 = unsafe { std::mem::transmute(new_state) };
 
                 // Skip if already visited
-                if visited.contains(&new_state) {
+                if visited.contains(&pack_64) {
                     continue;
                 }
 
                 // Only add to heap if this is a better path (or first time seeing this state)
-                if let Some(&existing_distance) = distances.get(&new_state) {
+                if let Some(&existing_distance) = distances.get(&pack_64) {
                     if new_score >= existing_distance {
                         continue;
                     }
                 }
 
-                distances.insert(new_state, new_score);
-                heap.push(Reverse((new_score, new_pos, new_dir)));
+                distances.insert(pack_64, new_score);
+                heap.push(Reverse((new_score, new_state)));
             }
         }
 
@@ -75,69 +113,138 @@ impl Solution for Day16 {
     fn solve_p2(&self, input: &str) -> Self::Part2 {
         let (grid, start_pos) = parse_input(input);
 
-        let p1_score = self.solve_p1(input);
+        // Use modified Dijkstra to find all shortest paths
+        let mut distances: HashMap<u64, u64> = HashMap::new();
+        let mut heap: BinaryHeap<Reverse<(u64, State)>> = BinaryHeap::new();
+        let mut predecessors: HashMap<u64, Vec<u64>> = HashMap::new();
 
-        let mut cache: HashMap<(i32, i32, i32, i32), u64> = HashMap::new();
-        let mut stack: VecDeque<((i32, i32), (i32, i32), u64, Vec<(i32, i32)>)> = VecDeque::new();
-        let mut path_tiles: HashSet<(i32, i32)> = HashSet::new();
+        let start_state = State::new(start_pos.0, start_pos.1, 0, 1);
+        let start_pack = unsafe { std::mem::transmute(start_state) };
 
-        stack.push_back((start_pos, (0, 1), 0, Vec::new()));
+        distances.insert(start_pack, 0);
+        heap.push(Reverse((0, start_state)));
 
-        while let Some((pos, dir, score, mut path)) = stack.pop_front() {
-            path.push(pos);
+        let mut end_states = Vec::new();
+        let mut best_score = u64::MAX;
 
-            if score > p1_score {
-                continue;
-            }
+        while let Some(Reverse((score, state))) = heap.pop() {
+            let pack_64 = unsafe { std::mem::transmute(state) };
 
-            let state = (pos.0, pos.1, dir.0, dir.1);
-
-            // update cache score if current score is lower
-            if let Some(&old_score) = cache.get(&state) {
-                if score > old_score {
+            // Skip if we've already processed this state with a better score
+            if let Some(&existing_score) = distances.get(&pack_64) {
+                if score > existing_score {
                     continue;
                 }
             }
-            cache.insert(state, score);
 
-            if grid[pos.0 as usize][pos.1 as usize] == 'E' {
-                path_tiles.extend(path);
+            // Check if we reached the end
+            if grid[state.x as usize][state.y as usize] == b'E' {
+                if score < best_score {
+                    best_score = score;
+                    end_states.clear();
+                    end_states.push(pack_64);
+                } else if score == best_score {
+                    end_states.push(pack_64);
+                }
                 continue;
             }
 
-            // move forward for 1 cost
-            let new_pos = (pos.0 + dir.0, pos.1 + dir.1);
-            if inbounds(new_pos.1, new_pos.0, &grid)
-                && grid[new_pos.0 as usize][new_pos.1 as usize] != '#'
-            {
-                stack.push_back((new_pos, dir, score + 1, path.clone()));
-            }
+            let next_moves = [
+                // Move forward
+                (
+                    score + 1,
+                    (
+                        state.x + state.dir_x,
+                        state.y + state.dir_y,
+                        state.dir_x,
+                        state.dir_y,
+                    ),
+                ),
+                // Rotate clockwise
+                (score + 1000, (state.x, state.y, state.dir_y, -state.dir_x)),
+                // Rotate counterclockwise
+                (score + 1000, (state.x, state.y, -state.dir_y, state.dir_x)),
+            ];
 
-            // rotate clockwise or counterclockwise for 1000 cost
-            let new_dir = (dir.1, -dir.0);
-            stack.push_back((pos, new_dir, score + 1000, path.clone()));
-            let new_dir = (-dir.1, dir.0);
-            stack.push_back((pos, new_dir, score + 1000, path));
+            for (new_score, new_state_tuple) in next_moves {
+                // Check bounds and walls
+                if !inbounds(new_state_tuple.0, new_state_tuple.1, &grid)
+                    || grid[new_state_tuple.0 as usize][new_state_tuple.1 as usize] == b'#'
+                {
+                    continue;
+                }
+
+                let new_state = State::new(
+                    new_state_tuple.0,
+                    new_state_tuple.1,
+                    new_state_tuple.2,
+                    new_state_tuple.3,
+                );
+                let new_pack = unsafe { std::mem::transmute(new_state) };
+
+                // Handle shortest path tracking
+                match distances.get(&new_pack) {
+                    Some(&existing_score) => {
+                        if new_score < existing_score {
+                            // Found a better path
+                            distances.insert(new_pack, new_score);
+                            predecessors.insert(new_pack, vec![pack_64]);
+                            heap.push(Reverse((new_score, new_state)));
+                        } else if new_score == existing_score {
+                            // Found an equally good path
+                            predecessors.entry(new_pack).or_default().push(pack_64);
+                        }
+                    }
+                    None => {
+                        // First time seeing this state
+                        distances.insert(new_pack, new_score);
+                        predecessors.insert(new_pack, vec![pack_64]);
+                        heap.push(Reverse((new_score, new_state)));
+                    }
+                }
+            }
+        }
+
+        // Backtrack from all end states to collect all tiles on optimal paths
+        let mut path_tiles: HashSet<(i16, i16)> = HashSet::new();
+        let mut stack: Vec<u64> = end_states;
+        let mut visited: HashSet<u64> = HashSet::new();
+
+        while let Some(state_pack) = stack.pop() {
+            if visited.contains(&state_pack) {
+                continue;
+            }
+            visited.insert(state_pack);
+
+            let state: State = unsafe { std::mem::transmute(state_pack) };
+            path_tiles.insert((state.x, state.y));
+
+            if let Some(preds) = predecessors.get(&state_pack) {
+                stack.extend(preds.iter());
+            }
         }
 
         path_tiles.len()
     }
 }
 
-fn inbounds<T>(x: i32, y: i32, grid: &Vec<Vec<T>>) -> bool {
+fn inbounds<T>(x: i16, y: i16, grid: &Vec<Vec<T>>) -> bool {
     let height = grid.len();
     let width = grid[0].len();
-    x >= 0 && x < width as i32 && y >= 0 && y < height as i32
+    x >= 0 && x < width as i16 && y >= 0 && y < height as i16
 }
 
-fn parse_input(input: &str) -> (Vec<Vec<char>>, (i32, i32)) {
-    let grid: Vec<Vec<char>> = input.lines().map(|line| line.chars().collect()).collect();
+fn parse_input(input: &str) -> (Vec<Vec<u8>>, (i16, i16)) {
+    let grid = input
+        .lines()
+        .map(|line| line.bytes().collect())
+        .collect::<Vec<Vec<_>>>();
 
     let mut start_pos = (0, 0);
     'outer: for y in 0..grid.len() {
         for x in 0..grid[y].len() {
-            if grid[y][x] == 'S' {
-                start_pos = (y as i32, x as i32);
+            if grid[y][x] == b'S' {
+                start_pos = (y as i16, x as i16);
                 break 'outer;
             }
         }
