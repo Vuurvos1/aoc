@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 use std::cmp::Reverse;
-use std::collections::{BinaryHeap, HashMap, HashSet, VecDeque};
+use std::collections::{BinaryHeap, HashMap, HashSet};
 
 use crate::Solution;
 
@@ -113,71 +113,115 @@ impl Solution for Day16 {
     fn solve_p2(&self, input: &str) -> Self::Part2 {
         let (grid, start_pos) = parse_input(input);
 
-        let p1_score = self.solve_p1(input);
+        // Use modified Dijkstra to find all shortest paths
+        let mut distances: HashMap<u64, u64> = HashMap::new();
+        let mut heap: BinaryHeap<Reverse<(u64, State)>> = BinaryHeap::new();
+        let mut predecessors: HashMap<u64, Vec<u64>> = HashMap::new();
 
-        let mut cache: HashMap<u64, u64> = HashMap::new();
-        let mut stack: VecDeque<(State, u64, Vec<(i16, i16)>)> = VecDeque::new();
-        let mut path_tiles: HashSet<(i16, i16)> = HashSet::new();
+        let start_state = State::new(start_pos.0, start_pos.1, 0, 1);
+        let start_pack = unsafe { std::mem::transmute(start_state) };
 
-        stack.push_back((State::new(start_pos.0, start_pos.1, 0, 1), 0, Vec::new()));
+        distances.insert(start_pack, 0);
+        heap.push(Reverse((0, start_state)));
 
-        while let Some((state, score, mut path)) = stack.pop_front() {
-            path.push((state.x, state.y));
+        let mut end_states = Vec::new();
+        let mut best_score = u64::MAX;
 
-            if score > p1_score {
-                continue;
-            }
-
+        while let Some(Reverse((score, state))) = heap.pop() {
             let pack_64 = unsafe { std::mem::transmute(state) };
 
-            // update cache score if current score is lower
-            if let Some(&old_score) = cache.get(&pack_64) {
-                if score > old_score {
+            // Skip if we've already processed this state with a better score
+            if let Some(&existing_score) = distances.get(&pack_64) {
+                if score > existing_score {
                     continue;
                 }
             }
-            cache.insert(pack_64, score);
 
+            // Check if we reached the end
             if grid[state.x as usize][state.y as usize] == b'E' {
-                path_tiles.extend(path);
+                if score < best_score {
+                    best_score = score;
+                    end_states.clear();
+                    end_states.push(pack_64);
+                } else if score == best_score {
+                    end_states.push(pack_64);
+                }
                 continue;
             }
 
-            // move forward for 1 cost
-            let new_pos = (state.x + state.dir_x, state.y + state.dir_y);
-            if inbounds(new_pos.1, new_pos.0, &grid)
-                && grid[new_pos.0 as usize][new_pos.1 as usize] != b'#'
-            {
-                let new_score = score + 1;
-                if new_score > p1_score {
+            let next_moves = [
+                // Move forward
+                (
+                    score + 1,
+                    (
+                        state.x + state.dir_x,
+                        state.y + state.dir_y,
+                        state.dir_x,
+                        state.dir_y,
+                    ),
+                ),
+                // Rotate clockwise
+                (score + 1000, (state.x, state.y, state.dir_y, -state.dir_x)),
+                // Rotate counterclockwise
+                (score + 1000, (state.x, state.y, -state.dir_y, state.dir_x)),
+            ];
+
+            for (new_score, new_state_tuple) in next_moves {
+                // Check bounds and walls
+                if !inbounds(new_state_tuple.0, new_state_tuple.1, &grid)
+                    || grid[new_state_tuple.0 as usize][new_state_tuple.1 as usize] == b'#'
+                {
                     continue;
                 }
 
-                stack.push_back((
-                    State::new(new_pos.0, new_pos.1, state.dir_x, state.dir_y),
-                    new_score,
-                    path.clone(),
-                ));
-            }
+                let new_state = State::new(
+                    new_state_tuple.0,
+                    new_state_tuple.1,
+                    new_state_tuple.2,
+                    new_state_tuple.3,
+                );
+                let new_pack = unsafe { std::mem::transmute(new_state) };
 
-            // rotate clockwise or counterclockwise for 1000 cost
-            let new_score = score + 1000;
-            if new_score > p1_score {
+                // Handle shortest path tracking
+                match distances.get(&new_pack) {
+                    Some(&existing_score) => {
+                        if new_score < existing_score {
+                            // Found a better path
+                            distances.insert(new_pack, new_score);
+                            predecessors.insert(new_pack, vec![pack_64]);
+                            heap.push(Reverse((new_score, new_state)));
+                        } else if new_score == existing_score {
+                            // Found an equally good path
+                            predecessors.entry(new_pack).or_default().push(pack_64);
+                        }
+                    }
+                    None => {
+                        // First time seeing this state
+                        distances.insert(new_pack, new_score);
+                        predecessors.insert(new_pack, vec![pack_64]);
+                        heap.push(Reverse((new_score, new_state)));
+                    }
+                }
+            }
+        }
+
+        // Backtrack from all end states to collect all tiles on optimal paths
+        let mut path_tiles: HashSet<(i16, i16)> = HashSet::new();
+        let mut stack: Vec<u64> = end_states;
+        let mut visited: HashSet<u64> = HashSet::new();
+
+        while let Some(state_pack) = stack.pop() {
+            if visited.contains(&state_pack) {
                 continue;
             }
+            visited.insert(state_pack);
 
-            let new_dir = (state.dir_y, -state.dir_x);
-            stack.push_back((
-                State::new(state.x, state.y, new_dir.0, new_dir.1),
-                new_score,
-                path.clone(),
-            ));
-            let new_dir = (-state.dir_y, state.dir_x);
-            stack.push_back((
-                State::new(state.x, state.y, new_dir.0, new_dir.1),
-                new_score,
-                path,
-            ));
+            let state: State = unsafe { std::mem::transmute(state_pack) };
+            path_tiles.insert((state.x, state.y));
+
+            if let Some(preds) = predecessors.get(&state_pack) {
+                stack.extend(preds.iter());
+            }
         }
 
         path_tiles.len()
