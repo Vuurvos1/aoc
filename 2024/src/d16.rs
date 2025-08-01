@@ -5,6 +5,20 @@ use crate::Solution;
 
 pub struct Day16;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+struct State {
+    x: u16,
+    y: u16,
+    dir_x: i16,
+    dir_y: i16,
+}
+
+impl State {
+    fn new(x: u16, y: u16, dir_x: i16, dir_y: i16) -> Self {
+        Self { x, y, dir_x, dir_y }
+    }
+}
+
 impl Solution for Day16 {
     type Part1 = u64;
     type Part2 = usize;
@@ -12,16 +26,17 @@ impl Solution for Day16 {
     fn solve_p1(&self, input: &str) -> Self::Part1 {
         let (grid, start_pos) = parse_input(input);
 
-        let mut distances: HashMap<(i32, i32, i32, i32), u64> = HashMap::new();
-        let mut heap: BinaryHeap<Reverse<(u64, (i32, i32), (i32, i32))>> = BinaryHeap::new();
-        let mut visited: HashSet<(i32, i32, i32, i32)> = HashSet::new();
+        let mut distances: HashMap<State, u64> = HashMap::new();
+        let mut heap: BinaryHeap<Reverse<(u64, (i32, i32, i32, i32))>> = BinaryHeap::new();
+        let mut visited: HashSet<State> = HashSet::new();
 
         let start_state = (start_pos.0, start_pos.1, 0, 1); // facing east initially
         distances.insert(start_state, 0);
-        heap.push(Reverse((0, start_pos, (0, 1))));
+        heap.push(Reverse((0, (start_pos.0, start_pos.1, 0, 1))));
 
-        while let Some(Reverse((score, pos, dir))) = heap.pop() {
-            let state = (pos.0, pos.1, dir.0, dir.1);
+        while let Some(Reverse((score, state))) = heap.pop() {
+            let pos = (state.0, state.1);
+            let dir = (state.2, state.3);
 
             if visited.contains(&state) {
                 continue;
@@ -29,7 +44,7 @@ impl Solution for Day16 {
             visited.insert(state);
 
             // arrived at the end
-            if grid[pos.0 as usize][pos.1 as usize] == 'E' {
+            if grid[pos.0 as usize][pos.1 as usize] == b'E' {
                 return score;
             }
 
@@ -45,7 +60,7 @@ impl Solution for Day16 {
             for (new_score, new_pos, new_dir) in next_moves {
                 // Check bounds and walls
                 if !inbounds(new_pos.1, new_pos.0, &grid)
-                    || grid[new_pos.0 as usize][new_pos.1 as usize] == '#'
+                    || grid[new_pos.0 as usize][new_pos.1 as usize] == b'#'
                 {
                     continue;
                 }
@@ -65,7 +80,7 @@ impl Solution for Day16 {
                 }
 
                 distances.insert(new_state, new_score);
-                heap.push(Reverse((new_score, new_pos, new_dir)));
+                heap.push(Reverse((new_score, new_state)));
             }
         }
 
@@ -100,7 +115,7 @@ impl Solution for Day16 {
             }
             cache.insert(state, score);
 
-            if grid[pos.0 as usize][pos.1 as usize] == 'E' {
+            if grid[pos.0 as usize][pos.1 as usize] == b'E' {
                 path_tiles.extend(path);
                 continue;
             }
@@ -108,7 +123,7 @@ impl Solution for Day16 {
             // move forward for 1 cost
             let new_pos = (pos.0 + dir.0, pos.1 + dir.1);
             if inbounds(new_pos.1, new_pos.0, &grid)
-                && grid[new_pos.0 as usize][new_pos.1 as usize] != '#'
+                && grid[new_pos.0 as usize][new_pos.1 as usize] != b'#'
             {
                 stack.push_back((new_pos, dir, score + 1, path.clone()));
             }
@@ -130,13 +145,16 @@ fn inbounds<T>(x: i32, y: i32, grid: &Vec<Vec<T>>) -> bool {
     x >= 0 && x < width as i32 && y >= 0 && y < height as i32
 }
 
-fn parse_input(input: &str) -> (Vec<Vec<char>>, (i32, i32)) {
-    let grid: Vec<Vec<char>> = input.lines().map(|line| line.chars().collect()).collect();
+fn parse_input(input: &str) -> (Vec<Vec<u8>>, (i32, i32)) {
+    let grid = input
+        .lines()
+        .map(|line| line.bytes().collect())
+        .collect::<Vec<Vec<_>>>();
 
     let mut start_pos = (0, 0);
     'outer: for y in 0..grid.len() {
         for x in 0..grid[y].len() {
-            if grid[y][x] == 'S' {
+            if grid[y][x] == b'S' {
                 start_pos = (y as i32, x as i32);
                 break 'outer;
             }
