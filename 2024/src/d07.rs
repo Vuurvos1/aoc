@@ -1,4 +1,5 @@
 use crate::{utils::concat_numbers, Solution};
+use rayon::prelude::*;
 
 pub struct Day07;
 
@@ -7,45 +8,43 @@ impl Solution for Day07 {
     type Part2 = u64;
 
     fn solve_p1(&self, input: &str) -> Self::Part1 {
-        let mut sum = 0;
+        input
+            .par_lines()
+            .filter_map(|line| {
+                let colon_pos = line.find(": ").unwrap();
+                let answer = line[..colon_pos].parse::<u64>().unwrap();
+                let digits: Vec<u64> = line[colon_pos + 2..]
+                    .split(' ')
+                    .map(|x| x.parse::<u64>().unwrap())
+                    .collect();
 
-        for line in input.lines() {
-            // get all numbers in line
-            let (s1, s2) = line.split_once(": ").unwrap();
-            let awnser = s1.parse::<u64>().unwrap();
-            let digits = s2
-                .split(" ")
-                .map(|x| x.parse::<u64>().unwrap())
-                .collect::<Vec<u64>>();
-
-            // try all combinations of operations on all digits to see if one procudes the awnser
-            if math_numbers(digits[0], awnser, &digits, 1, &['+', '*']) {
-                sum += awnser;
-            }
-        }
-
-        sum
+                if math_numbers(digits[0], answer, &digits, 1, &['+', '*']) {
+                    Some(answer)
+                } else {
+                    None
+                }
+            })
+            .sum()
     }
 
     fn solve_p2(&self, input: &str) -> Self::Part2 {
-        let mut sum = 0;
+        input
+            .par_lines()
+            .filter_map(|line| {
+                let (s1, s2) = line.split_once(": ").unwrap();
+                let answer = s1.parse::<u64>().unwrap();
+                let digits = s2
+                    .split(" ")
+                    .map(|x| x.parse::<u64>().unwrap())
+                    .collect::<Vec<u64>>();
 
-        for line in input.lines() {
-            // get all numbers in line
-            let (s1, s2) = line.split_once(": ").unwrap();
-            let awnser = s1.parse::<u64>().unwrap();
-            let digits = s2
-                .split(" ")
-                .map(|x| x.parse::<u64>().unwrap())
-                .collect::<Vec<u64>>();
-
-            // try all combinations of operations on all digits to see if one procudes the awnser
-            if math_numbers(digits[0], awnser, &digits, 1, &['+', '*', '|']) {
-                sum += awnser;
-            }
-        }
-
-        sum
+                if math_numbers(digits[0], answer, &digits, 1, &['+', '*', '|']) {
+                    Some(answer)
+                } else {
+                    None
+                }
+            })
+            .sum()
     }
 }
 
@@ -62,7 +61,7 @@ fn math_numbers(
     }
 
     // prune branches that are already too big
-    if sum > awnser {
+    if sum >= awnser {
         return false;
     }
 
