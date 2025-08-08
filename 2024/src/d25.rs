@@ -1,41 +1,53 @@
 use crate::Solution;
 
+/*
+Locks and keys fit into 32 bit integers
+The first and last rows are only relevant to check if it is a key or a lock
+So a 5x5 grid is 25 bits plus 4 extra bits for new lines
+The locks and keys can then be checked for overlap using a simple bitwise AND operation
+
+#####
+##.##    11011
+.#.##    01011
+...## -> 00011 -> 110110_010110_000110_000100_000100
+...#.    00010
+...#.    00010
+.....
+*/
+
 pub struct Day25;
 
 impl Solution for Day25 {
-    type Part1 = usize;
+    type Part1 = u32;
     type Part2 = u32;
 
     fn solve_p1(&self, input: &str) -> Self::Part1 {
-        let input = input
-            .split("\n\n")
-            .map(|line| {
-                let mut result = 0;
-                let bytes = line.as_bytes();
-                for &c in &bytes[6..] {
-                    result <<= 1;
-                    result |= (c == b'#') as u64;
-                }
-                result
-            })
-            .collect::<Vec<_>>();
+        let mut slice = input.as_bytes();
+        let mut keys = Vec::with_capacity(250);
+        let mut locks = Vec::with_capacity(250);
 
-        let mut keys: Vec<u64> = Vec::with_capacity(input.len() / 2);
-        let mut locks: Vec<u64> = Vec::with_capacity(input.len() / 2);
+        while !slice.is_empty() {
+            let bits = slice[6..35]
+                .iter()
+                .fold(0, |acc, &c| acc << 1 | (c == b'#') as u32);
 
-        for grid in input {
-            let is_key = grid & 1 == 0;
-            if is_key {
-                locks.push(grid)
+            if slice[0] == b'#' {
+                locks.push(bits);
             } else {
-                keys.push(grid);
+                keys.push(bits);
+            }
+
+            slice = &slice[43.min(slice.len())..];
+        }
+
+        let mut sum = 0;
+        for key in &keys {
+            for lock in &locks {
+                sum += (key & lock == 0) as u32;
             }
         }
 
-        // try all keys on all locks to check fit
-        keys.iter()
-            .map(|&key| locks.iter().filter(|&&lock| key & lock == 0).count())
-            .sum()
+        sum
     }
 
     fn solve_p2(&self, _input: &str) -> Self::Part2 {
