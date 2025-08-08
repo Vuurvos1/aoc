@@ -148,12 +148,11 @@ impl Solution for Day09 {
         let mut sum: u64 = 0;
         let mut position: u64 = 0;
         for s in file_disk {
-            for _ in 0..s.size() {
-                if s.is_file() {
-                    sum += position * s.id();
-                }
-                position += 1;
+            let size = s.size() as u64;
+            if s.is_file() {
+                sum += s.id() * (size * position + size * (size - 1) / 2);
             }
+            position += size;
         }
 
         sum
