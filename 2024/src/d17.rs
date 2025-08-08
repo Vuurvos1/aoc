@@ -56,7 +56,7 @@ impl Solution for Day17 {
     }
 }
 
-fn combo(operand: u64, register: &Vec<u64>) -> u64 {
+fn combo(operand: u64, register: &[u64]) -> u64 {
     match operand {
         4 => register[0],
         5 => register[1],
@@ -65,9 +65,9 @@ fn combo(operand: u64, register: &Vec<u64>) -> u64 {
     }
 }
 
-fn run_program(a: u64, b: u64, c: u64, stack: &Vec<u64>) -> Vec<u64> {
+fn run_program(a: u64, b: u64, c: u64, stack: &[u64]) -> Vec<u64> {
     let mut out: Vec<u64> = Vec::new();
-    let mut register: Vec<u64> = vec![a, b, c];
+    let mut register = [a, b, c];
     let mut pointer = 0;
 
     while pointer < stack.len() {
