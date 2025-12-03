@@ -4,7 +4,7 @@ pub struct Day01;
 
 impl Solution for Day01 {
     type Part1 = u32;
-    type Part2 = u32;
+    type Part2 = i32;
 
     fn solve_p1(&self, input: &str) -> Self::Part1 {
         let mut dial = 50;
@@ -32,30 +32,46 @@ impl Solution for Day01 {
     }
 
     fn solve_p2(&self, input: &str) -> Self::Part2 {
-        let mut dial: i32 = 50;
-        let mut count: u32 = 0;
+        let mut dial = 50;
+        let mut count = 0;
 
         for line in input.lines() {
-            let mut chars = line.chars();
-            let direction = chars.next().unwrap();
-            let amount: i32 = chars.as_str().parse().unwrap();
+            let (dir, num) = line.split_at(1);
+            let delta = num.parse::<i32>().unwrap() * if dir == "R" { 1 } else { -1 };
 
-            let delta = if direction == 'R' { amount } else { -amount };
-            let new_dial = dial + delta;
+            dial += delta;
 
-            // Count how many multiples of 100 we pass through or land on
-            // = floor(new_dial/100) - floor(dial/100) for positive movement
-            // or ceil(dial/100) - ceil(new_dial/100) for negative movement
-            let crosses = if delta >= 0 {
-                new_dial.div_euclid(100) - dial.div_euclid(100)
-            } else {
-                dial.div_euclid(100) - new_dial.div_euclid(100)
-            };
-
-            count += crosses as u32;
-            dial = new_dial.rem_euclid(100);
+            if dial <= 0 && delta != dial {
+                count += 1;
+            }
+            count += dial.abs() / 100;
+            dial = dial.rem_euclid(100);
         }
 
         count
     }
+}
+
+#[test]
+fn p2_test1() {
+    // end on 0
+    let input = "R50";
+    let p = Day01.solve_p2(input);
+    assert_eq!(p, 1);
+}
+
+#[test]
+fn p2_test2() {
+    // pass 0
+    let input = "R51";
+    let p = Day01.solve_p2(input);
+    assert_eq!(p, 1);
+}
+
+#[test]
+fn p2_test3() {
+    // pass 0 x times
+    let input = "R200";
+    let p = Day01.solve_p2(input);
+    assert_eq!(p, 2);
 }
