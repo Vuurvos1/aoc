@@ -14,13 +14,22 @@ impl Solution for Day02 {
             let start = parts.next().unwrap().parse::<u64>().unwrap();
             let end = parts.next().unwrap().parse::<u64>().unwrap();
 
-            for i in start..=end {
-                let i_str = i.to_string();
+            for n in start..=end {
+                let num_digits = n.ilog10() + 1;
 
-                let half1 = i_str.chars().take(i_str.len() / 2).collect::<String>();
-                let half2 = i_str.chars().skip(i_str.len() / 2).collect::<String>();
-                if half1 == half2 {
-                    sum += i;
+                // Odd length numbers can't have matching halves
+                if num_digits % 2 != 0 {
+                    continue;
+                }
+
+                let half_digits = num_digits / 2;
+                let divisor = 10u64.pow(half_digits);
+
+                let right_half = n % divisor;
+                let left_half = n / divisor;
+
+                if left_half == right_half {
+                    sum += n;
                 }
             }
         }
