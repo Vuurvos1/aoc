@@ -4,7 +4,8 @@ use aoc2025::{
     d03,
     d04,
     d05,
-    // d06, d07, d08, d09, d10, d11, d12
+    d06,
+    //  d07, d08, d09, d10, d11, d12
 };
 use std::env;
 
@@ -78,7 +79,7 @@ fn execute_day(day_num: u32, input: &str) -> Option<DayResult> {
         3 => run_day_solution(d03::Day03, &input),
         4 => run_day_solution(d04::Day04, &input),
         5 => run_day_solution(d05::Day05, &input),
-        // 6 => run_day_solution(d06::Day06, &input),
+        6 => run_day_solution(d06::Day06, &input),
         // 7 => run_day_solution(d07::Day07, &input),
         // 8 => run_day_solution(d08::Day08, &input),
         // 9 => run_day_solution(d09::Day09, &input),
