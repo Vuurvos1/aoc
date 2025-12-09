@@ -7,7 +7,7 @@ use aoc2025::{
     d06,
     d07,
     d08,
-    //  d09,
+    d09,
     //  d10,
     //  d11,
     //  d12
@@ -87,7 +87,7 @@ fn execute_day(day_num: u32, input: &str) -> Option<DayResult> {
         6 => run_day_solution(d06::Day06, &input),
         7 => run_day_solution(d07::Day07, &input),
         8 => run_day_solution(d08::Day08, &input),
-        // 9 => run_day_solution(d09::Day09, &input),
+        9 => run_day_solution(d09::Day09, &input),
         // 10 => run_day_solution(d10::Day10, &input),
         // 11 => run_day_solution(d11::Day11, &input),
         // 12 => run_day_solution(d12::Day12, &input),
