@@ -58,6 +58,11 @@ impl Solution for Day09 {
                 let min_y = y1.min(y2);
                 let max_y = y1.max(y2);
 
+                let area = (max_x - min_x + 1) * (max_y - min_y + 1);
+                if area <= max_area {
+                    continue;
+                }
+
                 // check if this rectangle is entirely inside the polygon
                 if is_rectangle_inside_polygon(&corners, min_x, max_x, min_y, max_y) {
                     let area = (max_x - min_x + 1) * (max_y - min_y + 1);
