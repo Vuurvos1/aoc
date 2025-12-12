@@ -1,17 +1,4 @@
-use aoc2025::{
-    d01,
-    d02,
-    d03,
-    d04,
-    d05,
-    d06,
-    d07,
-    d08,
-    d09,
-    d10,
-    d11,
-    //  d12
-};
+use aoc2025::{d01, d02, d03, d04, d05, d06, d07, d08, d09, d10, d11, d12};
 use std::env;
 
 struct DayResult {
@@ -90,7 +77,7 @@ fn execute_day(day_num: u32, input: &str) -> Option<DayResult> {
         9 => run_day_solution(d09::Day09, &input),
         10 => run_day_solution(d10::Day10, &input),
         11 => run_day_solution(d11::Day11, &input),
-        // 12 => run_day_solution(d12::Day12, &input),
+        12 => run_day_solution(d12::Day12, &input),
         _ => return None,
     };
 
